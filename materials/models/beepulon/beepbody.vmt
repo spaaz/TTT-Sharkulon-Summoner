@@ -1,0 +1,5 @@
+"vertexlitgeneric"
+{
+	"$baseTexture" "models/beepulon/beepbody"
+	"$bumpmap" "models/beepulon/beep_normal"
+}

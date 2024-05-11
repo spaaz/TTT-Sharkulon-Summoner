@@ -1,0 +1,5 @@
+"vertexlitgeneric"
+{
+	"$baseTexture" "models/beepulon/sharkulon2"
+	"$bumpmap" "models/beepulon/sharkulon2_normal"
+}
