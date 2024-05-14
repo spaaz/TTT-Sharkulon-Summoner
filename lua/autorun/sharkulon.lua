@@ -32,4 +32,10 @@ sound.Add( {
 	sound = "sharkulon_loop.wav"
 } )
 
+local NPC = {	Name = "Sharkulon",
+				Class = "npc_sharkulon",
+				Category = "Combine" }
+
+list.Set( "NPC", "isharkulon", NPC )
+
 CreateConVar( "ttt_sharkulon_health", 160 ,{ FCVAR_ARCHIVE, FCVAR_NOTIFY }, "Initial health of a Sharkulon" )
