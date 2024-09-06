@@ -31,6 +31,8 @@ function ENT:Initialize()
 	self.npc:Spawn()
 	self.npc:Activate()
 	self.npc:SetName("sharkulon")
+	
+	self.npc.ScoreName = "Sharkulon"
 
 	self:SetParent(self.npc)
 
@@ -50,6 +52,7 @@ function ENT:Initialize()
 	self.npc.move:Spawn()
 	self.npc.move:Activate()
 	self.npc.move:SetName("sharkulon")
+	self.npc.move.ScoreName = "Sharkulon"
 	self.npc.move.npc = self.npc
 
 	self.npc:SetParent(self.npc.move)
