@@ -23,16 +23,17 @@ function ENT:Initialize()
 	self:SetOwner(self.Owner)
 
 	self.npc = ents.Create( "npc_turret_ceiling" )
-	self.npc:SetPos(self:GetPos() + Vector(0,0,6))
+	self.npc:SetPos(self:GetPos() + Vector(0,0,-6))
 	self.npc:SetAngles(self:GetAngles() + Angle(20,0,0))
 	self.npc:SetSpawnEffect(false)
-	self.npc:SetSaveValue("spawnflags",32)
+	self.npc:SetSaveValue("spawnflags",160)
 
 	self.npc:Spawn()
 	self.npc:Activate()
 	self.npc:SetName("sharkulon")
 	
 	self.npc.ScoreName = "Sharkulon"
+	self.npc.own = self
 
 	self:SetParent(self.npc)
 
@@ -42,7 +43,7 @@ function ENT:Initialize()
 	end
 
 	self.npc.move = ents.Create( "npc_clawscanner" )
-	local sPos = self:GetPos()+ Vector(0,0,12)
+	local sPos = self:GetPos()
 	self.npc.move:SetPos(sPos)
 	self.npc.move.startPos = (sPos)
 	self.npc.move:SetAngles(self:GetAngles())
@@ -87,14 +88,18 @@ function ENT:Initialize()
 						local enemy =  move:GetEnemy()
 						if IsValid( enemy ) then
 							local isTurretEnabled = true
-							if npc:GetInternalVariable("spawnflags") == 256 then
+							if npc:HasSpawnFlags(256) then
 								isTurretEnabled = false
 							end
 							local fwd = enemy:GetForward()
 							local diff = move:GetPos() - enemy:GetPos()
 							local moveVec = Vector(0,0,0)
 							if isTurretEnabled then
-								moveVec = (fwd * -192) - diff
+								if move:Health()/move:GetMaxHealth() > 0.5 then
+									moveVec = (fwd * -144) - diff
+								else
+									moveVec = (fwd * -192) - diff
+								end
 							else
 								moveVec = (fwd * 192) - diff
 							end
@@ -106,17 +111,27 @@ function ENT:Initialize()
 							else
 								dot = (-1 * fwd):Dot(diff)
 							end
+							local vel = move:GetInternalVariable("m_vCurrentVelocity")
+							vel = vel * Vector(1,1,0)
+							vel:Normalize()
 							if dot > 0 then
 								local cross = fwd:Cross(diff)
-								if cross.z > 0 then
-									dot = -1 * dot
+								if dot < 0.9659 or !isTurretEnabled then
+									if cross.z > 0 then
+										dot = -1 * dot
+									end
+								else
+									cross = fwd:Cross(vel)
+									if cross.z > 0 then
+										dot = -1 * dot
+									end
 								end
 								moveVec:Rotate(Angle(0,(45*dot),0))
 							end
 							local heightDiff = moveVec.z				
 							moveVec.z = 0
 							moveVec:Normalize()
-							local vel = move:GetInternalVariable("m_vCurrentVelocity")
+							vel = move:GetInternalVariable("m_vCurrentVelocity")
 							vel.x = moveVec.x * 1600
 							vel.y = moveVec.y * 1600
 							if move:Health()/move:GetMaxHealth() > 0.5 then
@@ -180,27 +195,35 @@ function ENT:Initialize()
 		end)
 
 		local function sharkDamage(target, dmginfo)
-			if dmginfo:GetAttacker():GetName() == "sharkulon" then
-				if engine.ActiveGamemode() == "terrortown" then	
-					if target:IsPlayer() then
-						if target:Alive() and not target:IsSpec() then
-							if target:IsActiveTraitor() or (CR_VERSION and target:IsActiveTraitorTeam()) then
-								dmginfo:ScaleDamage(0.2)
-							else
-								dmginfo:ScaleDamage(0.35)
+			local att = dmginfo:GetAttacker()
+			if att:GetName() == "sharkulon" then
+				if dmginfo:GetDamage() < 3 then
+					dmginfo:ScaleDamage(1.82)
+				end
+					if engine.ActiveGamemode() == "terrortown" then	
+						if target:IsPlayer() then
+							if target:Alive() and not target:IsSpec() then
+								local summIsT = false
+								if att.own then
+									summIsT = att.own.summIsTraitor
+								end
+								if (target:IsActiveTraitor() or (CR_VERSION and target:IsActiveTraitorTeam())) and summIsT then
+									dmginfo:ScaleDamage(0.2)
+								else
+									dmginfo:ScaleDamage(0.4)
+								end
 							end
+						else
+							dmginfo:ScaleDamage(0.35)
 						end
 					else
 						dmginfo:ScaleDamage(0.35)
-					end
-				else
-					dmginfo:ScaleDamage(0.35)
-				end
+					end 
 			end
 			if target:GetClass() == "npc_clawscanner" and target:GetName() == "sharkulon" then
-				local att = dmginfo:GetAttacker()
 				if att:GetName() == "sharkulon" then
 					dmginfo:ScaleDamage(0)
+					print("ding")
 				else
 					if att and IsValid(att) and att:IsPlayer() then 
 						timer.Create(tostring(move).."sharkulon_yeet",0.005,10,function()

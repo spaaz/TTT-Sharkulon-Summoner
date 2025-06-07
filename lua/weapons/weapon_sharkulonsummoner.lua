@@ -110,6 +110,12 @@ local function place_shark( tracedata, self )
             else
 				self.shark:SetPos( spawnereasd )
 				self.shark:Spawn()
+				if engine.ActiveGamemode() == "terrortown" then
+					self.shark.summIsTraitor = false
+					if owner:IsActiveTraitor() or (CR_VERSION and owner:IsActiveTraitorTeam()) then
+						self.shark.summIsTraitor = true
+					end
+				end
 				local moveNPC = self.shark.npc.move
 				if IsValid(moveNPC) then
 					local targetPly = nil
@@ -146,7 +152,7 @@ function SWEP:PrimaryAttack()
 	local tr = ply:GetEyeTrace()
 	local tracedata = {}
 	
-	tracedata.pos = tr.HitPos + Vector(0,0,20)
+	tracedata.pos = tr.HitPos + Vector(0,0,32)
     
 	if (!SERVER) then return end
 	
